@@ -39,19 +39,34 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'rest_framework',  # Add Django REST Framework
+    # 'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    # 'rest_framework.authtoken',  # Add this for token authenticati
+    'drf_yasg',
     'library',  # Add your library app
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',  # Optional
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',  # Optional, change based on your needs
-    ),
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#         'rest_framework.authentication.SessionAuthentication',  # Optional
+#     ),
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAuthenticated',  # Optional, change based on your needs
+#     ),
+# }
+# REST_FRAMEWORK = {
+#     # Parser classes priority-wise for Swagger
+#     'DEFAULT_PARSER_CLASSES': [
+#         'rest_framework.parsers.FormParser',
+#         'rest_framework.parsers.MultiPartParser',
+#         'rest_framework.parsers.JSONParser',
+#         'rest_framework.authentication.TokenAuthentication',
+#     ],
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.TokenAuthentication',
+#     ) 
+# }
 
 
 # JWT settings (Optional, customize as needed)
