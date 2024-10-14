@@ -37,36 +37,6 @@ schema_view = get_schema_view(
 )
 
 
-SWAGGER_SETTINGS = {
-    "exclude_namespaces": [], # List URL namespaces to ignore
-    "api_version": '0.1',  # Specify your API's version
-    "api_path": "/api",  # Specify the path to your API not a root level
-    "enabled_methods": [  # Specify which methods to enable in Swagger UI
-        'get',
-        'post',
-        'put',
-        'patch',
-        'delete'
-    ],
-    "api_key": '', # An API key
-    "is_authenticated": False,  # Set to True to enforce user authentication,
-    "is_superuser": False,  # Set to True to enforce admin only access
-}
-
-
-# SWAGGER_SETTINGS = {
-#     'SECURITY_DEFINITIONS': {
-#         'Bearer': {
-#             'type': 'apiKey',
-#             'name': 'Auth-Token',
-#             'in': 'header',
-#             'description': 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"',
-#         }
-#     },
-#     'USE_SESSION_AUTH': False,
-#     'DEFAULT_AUTO_SCHEMA_CLASS': 'drf_yasg.generators.OpenAPISchemaGenerator',
-# }
-
 
 
 urlpatterns = [
