@@ -24,29 +24,48 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 schema_view = get_schema_view(
-   openapi.Info(
-      title="Library Management API",
-      default_version='v1',
-      description="API documentation for the Library Management System",
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="contact@library.local"),
-      license=openapi.License(name="BSD License"),
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
+    openapi.Info(
+        title="Library Management API",
+        default_version='v1',
+        description="API documentation for the Library Management System",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="contact@library.local"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
 )
 
+
 SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header',
-            'description': 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"',
-        }
-    },
-    'USE_SESSION_AUTH': False,  # This disables the session-based auth in Swagger
+    "exclude_namespaces": [], # List URL namespaces to ignore
+    "api_version": '0.1',  # Specify your API's version
+    "api_path": "/api",  # Specify the path to your API not a root level
+    "enabled_methods": [  # Specify which methods to enable in Swagger UI
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete'
+    ],
+    "api_key": '', # An API key
+    "is_authenticated": False,  # Set to True to enforce user authentication,
+    "is_superuser": False,  # Set to True to enforce admin only access
 }
+
+
+# SWAGGER_SETTINGS = {
+#     'SECURITY_DEFINITIONS': {
+#         'Bearer': {
+#             'type': 'apiKey',
+#             'name': 'Auth-Token',
+#             'in': 'header',
+#             'description': 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"',
+#         }
+#     },
+#     'USE_SESSION_AUTH': False,
+#     'DEFAULT_AUTO_SCHEMA_CLASS': 'drf_yasg.generators.OpenAPISchemaGenerator',
+# }
 
 
 
@@ -54,10 +73,11 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/', include('library.urls')),  # Include library URLs
 
-        path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+
 ]

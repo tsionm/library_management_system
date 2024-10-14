@@ -39,34 +39,25 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'rest_framework',  # Add Django REST Framework
-    # 'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    # 'rest_framework.authtoken',  # Add this for token authenticati
     'drf_yasg',
     'library',  # Add your library app
+  
 ]
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'rest_framework_simplejwt.authentication.JWTAuthentication',
-#         'rest_framework.authentication.SessionAuthentication',  # Optional
-#     ),
-#     'DEFAULT_PERMISSION_CLASSES': (
-#         'rest_framework.permissions.IsAuthenticated',  # Optional, change based on your needs
-#     ),
-# }
-# REST_FRAMEWORK = {
-#     # Parser classes priority-wise for Swagger
-#     'DEFAULT_PARSER_CLASSES': [
-#         'rest_framework.parsers.FormParser',
-#         'rest_framework.parsers.MultiPartParser',
-#         'rest_framework.parsers.JSONParser',
-#         'rest_framework.authentication.TokenAuthentication',
-#     ],
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'rest_framework.authentication.TokenAuthentication',
-#     ) 
-# }
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',  # Optional
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',  # Optional, change based on your needs
+    ),
+}
+
+
+
+
 
 
 # JWT settings (Optional, customize as needed)
@@ -112,18 +103,33 @@ WSGI_APPLICATION = "library_management_system.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         'ENGINE': 'django.db.backends.postgresql',
+#     	'NAME': 'library_management',
+#     	'USER': 'library_user',
+#     	'PASSWORD': 'library_password',
+#     	'HOST': 'localhost',  # Docker container uses localhost
+#     	'PORT': '5432',                 # Default PostgreSQL port
+#         # "ENGINE": "django.db.backends.sqlite3",
+#         # "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
+
+
+
 DATABASES = {
-    "default": {
-        'ENGINE': 'django.db.backends.postgresql',
-    	'NAME': 'library_management',
-    	'USER': 'library_user',
-    	'PASSWORD': 'library_password',
-    	'HOST': 'localhost',  # Docker container uses localhost
-    	'PORT': '5432',                 # Default PostgreSQL port
-        # "ENGINE": "django.db.backends.sqlite3",
-        # "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'library_management',
+        'USER': 'root',                      # Use root user
+        'PASSWORD': 'root_password',          # Your root password
+        'HOST': '127.0.0.1',                 # Localhost for Docker
+        'PORT': '3307',                       # Docker port mapping
     }
 }
+
+
 
 
 # Password validation

@@ -1,13 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BookViewSet, UserViewSet, TransactionViewSet
+from .views import BookViewSet, UserViewSet
+# from .views import BookViewSet, UserViewSet, TransactionViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # Import token views
+from .views import BookViewSet, UserViewSet
+# from .views import BookViewSet, UserViewSet, TransactionViewSet
 
 router = DefaultRouter()
 router.register(r'books', BookViewSet)
 router.register(r'users', UserViewSet)
-router.register(r'transactions', TransactionViewSet)
-
+# router.register(r'transactions', TransactionViewSet)
 
 
 urlpatterns = [

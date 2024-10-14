@@ -6,13 +6,17 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # Import token views
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework.decorators import action
+from rest_framework.response import Response  # Import Response for custom actions
+from rest_framework import status  # Import status for response status codes
+from django.utils import timezone  # Import timezone for setting the return date
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    # Custom action to filter available books
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def available(self, request):
         available_books = self.queryset.filter(copies_available__gt=0)
@@ -21,18 +25,19 @@ class BookViewSet(viewsets.ModelViewSet):
         title = request.query_params.get('title', None)
         author = request.query_params.get('author', None)
         isbn = request.query_params.get('isbn', None)
+
         if title:
-            available_books = available_books.filter(title__icontains=title)
+            available_books = available_books.filter(title__icontains=title)  # Case-insensitive partial match
         if author:
-            available_books = available_books.filter(author__icontains=author)
+            available_books = available_books.filter(author__icontains=author)  # Case-insensitive partial match
         if isbn:
-            available_books = available_books.filter(isbn__icontains=isbn)
+            available_books = available_books.filter(isbn__iexact=isbn)  # Exact match
 
         serializer = self.get_serializer(available_books, many=True)
         return Response(serializer.data)
 
     # Custom action to check out a book
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'])
     def checkout(self, request, pk=None):
         book = self.get_object()
         user = request.user.libraryuser  # Assuming the user is linked to LibraryUser via OneToOneField
@@ -51,12 +56,12 @@ class BookViewSet(viewsets.ModelViewSet):
             return Response({"message": "No copies available."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Custom action to return a book
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'])
     def return_book(self, request, pk=None):
         book = self.get_object()
         user = request.user.libraryuser
 
-        # Check if the user has checked out the book and not yet returned it
+        # Check if the user has checked out the book and not yet returned it  
         try:
             transaction = Transaction.objects.get(user=user, book=book, return_date__isnull=True)
             transaction.return_date = timezone.now()
@@ -71,21 +76,28 @@ class BookViewSet(viewsets.ModelViewSet):
             return Response({"message": "You have not checked out this book."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+class UserCreateView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (AllowAny,)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response({
+            "username": user.username,
+            "email": user.email
+        }, status=status.HTTP_201_CREATED)
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     # permission_classes = [IsAuthenticated]
 
-class TransactionViewSet(viewsets.ModelViewSet):
-    queryset = Transaction.objects.all()
-    serializer_class = TransactionSerializer
+# class TransactionViewSet(viewsets.ModelViewSet):
+#     queryset = Transaction.objects.all()
+#     serializer_class = TransactionSerializer
     # permission_classes = [IsAuthenticated]
 
-# Add these lines to handle token authentication
-# urlpatterns = [
-#     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-#     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-# ]
-
-
-# Create your views here.
