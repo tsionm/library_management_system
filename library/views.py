@@ -12,11 +12,24 @@ from django.utils import timezone  # Import timezone for setting the return date
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 
+# Import Swagger tools for manual parameter specification
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsAuthenticated]
 
+
+    # Define query parameters for Swagger documentation
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('title', openapi.IN_QUERY, description="Filter by title (case-insensitive partial match)", type=openapi.TYPE_STRING),
+            openapi.Parameter('author', openapi.IN_QUERY, description="Filter by author (case-insensitive partial match)", type=openapi.TYPE_STRING),
+            openapi.Parameter('isbn', openapi.IN_QUERY, description="Filter by exact ISBN", type=openapi.TYPE_STRING)
+        ]
+    )
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def available(self, request):
         available_books = self.queryset.filter(copies_available__gt=0)
@@ -37,7 +50,7 @@ class BookViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     # Custom action to check out a book
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def checkout(self, request, pk=None):
         book = self.get_object()
         user = request.user.libraryuser  # Assuming the user is linked to LibraryUser via OneToOneField
@@ -56,7 +69,7 @@ class BookViewSet(viewsets.ModelViewSet):
             return Response({"message": "No copies available."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Custom action to return a book
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def return_book(self, request, pk=None):
         book = self.get_object()
         user = request.user.libraryuser
@@ -94,10 +107,5 @@ class UserCreateView(generics.CreateAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # permission_classes = [IsAuthenticated]
-
-# class TransactionViewSet(viewsets.ModelViewSet):
-#     queryset = Transaction.objects.all()
-#     serializer_class = TransactionSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
