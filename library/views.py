@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from .models import Book, User, Transaction
-from .serializers import BookSerializer, UserSerializer, TransactionSerializer
+from .serializers import BookSerializer, UserSerializer, TransactionSerializer, CheckoutSerializer, ReturnBookSerializer
 from django.urls import path, include 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # Import token views
 from rest_framework.permissions import IsAuthenticated 
@@ -48,11 +48,28 @@ class BookViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(available_books, many=True)
         return Response(serializer.data)
+    
+    @swagger_auto_schema(
+        method='post',
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'book_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the book to check out'),
+            },
+            required=['book_id']
+        )
+    )
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def checkout(self, request):
+        serializer = CheckoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        book_id = serializer.validated_data['book_id']
 
-    # Custom action to check out a book
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def checkout(self, request, pk=None):
-        book = self.get_object()
+        try:
+            book = Book.objects.get(pk=book_id)  # Retrieve the book based on the ID
+        except Book.DoesNotExist:
+            return Response({"message": "Book not found."}, status=status.HTTP_404_NOT_FOUND)
+
         user = request.user.libraryuser  # Assuming the user is linked to LibraryUser via OneToOneField
 
         # Check if the user has already checked out this book
@@ -63,18 +80,38 @@ class BookViewSet(viewsets.ModelViewSet):
             # Decrease available copies and create a transaction
             book.copies_available -= 1
             book.save()
-            transaction = Transaction.objects.create(user=user, book=book)
+            Transaction.objects.create(user=user, book=book)
             return Response({"message": "Book checked out successfully!"}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "No copies available."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Custom action to return a book
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def return_book(self, request, pk=None):
-        book = self.get_object()
-        user = request.user.libraryuser
 
-        # Check if the user has checked out the book and not yet returned it  
+    @swagger_auto_schema(
+        method='post',
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'book_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the book to return'),
+            },
+            required=['book_id']
+        )
+    )
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def return_book(self, request):
+        # Validate the incoming request data
+        serializer = ReturnBookSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        book_id = serializer.validated_data['book_id']
+
+        # Try to retrieve the book by ID
+        try:
+            book = Book.objects.get(pk=book_id)
+        except Book.DoesNotExist:
+            return Response({"message": "Book not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user.libraryuser  # Assuming the user is linked to LibraryUser via OneToOneField
+
+        # Check if the user has checked out the book and not yet returned it
         try:
             transaction = Transaction.objects.get(user=user, book=book, return_date__isnull=True)
             transaction.return_date = timezone.now()

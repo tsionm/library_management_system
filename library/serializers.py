@@ -23,3 +23,9 @@ class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = '__all__'
+
+class CheckoutSerializer(serializers.Serializer):
+    book_id = serializers.IntegerField(required=True)
+
+class ReturnBookSerializer(serializers.Serializer):
+    book_id = serializers.IntegerField(required=True)
